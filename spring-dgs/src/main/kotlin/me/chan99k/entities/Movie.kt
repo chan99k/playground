@@ -1,4 +1,4 @@
-package chan99k.springdgs.entities
+package me.chan99k.entities
 
 import jakarta.persistence.*
 import java.time.LocalDate
