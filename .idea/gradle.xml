@@ -9,6 +9,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/effective-java" />
+            <option value="$PROJECT_DIR$/spring-dgs" />
           </set>
         </option>
       </GradleProjectSettings>
