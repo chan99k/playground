@@ -2,9 +2,8 @@
 scalar Date
 """Email 타입입니다."""
 scalar Email
-
+"""Upload 타입입니다."""
 scalar Upload
-
 
 type Query {
     movie(movieId: ID!): Movie!

@@ -37,7 +37,6 @@ dependencies {
     implementation("com.netflix.graphql.dgs:graphql-dgs-spring-graphql-starter")
     implementation("com.netflix.graphql.dgs:graphql-dgs-extended-scalars") // 미리 등록된 자주 사용하는 scalars 를 등록하도록 함
     implementation("name.nkonev.multipart-spring-graphql:multipart-spring-graphql:1.5.3")
-    implementation("com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-gradle:7.0.3")
     implementation("com.netflix.graphql.dgs:graphql-dgs-spring-boot-micrometer")
 
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.0")
@@ -47,8 +46,6 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("com.netflix.graphql.dgs:graphql-dgs-spring-graphql-starter-test")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testImplementation("com.tngtech.archunit:archunit-junit5:1.4.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation(kotlin("test"))
 }
