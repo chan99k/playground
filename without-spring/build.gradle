@@ -1,0 +1,70 @@
+plugins {
+    id 'java'
+    id 'war'
+}
+
+group = 'chan99k'
+version = '1.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation('org.springframework:spring-webmvc:5.3.31')
+    implementation('org.springframework:spring-context:5.3.31')
+
+    implementation('org.apache.tomcat.embed:tomcat-embed-core:9.0.83')
+    implementation('org.apache.tomcat.embed:tomcat-embed-jasper:9.0.83')
+    implementation('org.apache.tomcat.embed:tomcat-embed-el:9.0.83')
+
+    implementation('io.springfox:springfox-swagger2:2.9.2')
+    implementation('io.springfox:springfox-swagger-ui:2.9.2')
+
+    implementation('javax.servlet:javax.servlet-api:4.0.1')
+
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.3'
+
+    implementation 'org.slf4j:slf4j-simple:2.0.13'
+
+    // 테스트 의존성
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.springframework:spring-test:5.3.31'
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+war {
+    archiveFileName = 'without-spring.war'
+}
+
+tasks.register('run', JavaExec) {
+    description = 'Runs the application with embedded Tomcat'
+    group = 'application'
+
+    mainClass = 'chan99k.Main'
+    classpath = sourceSets.main.runtimeClasspath
+    workingDir = rootProject.projectDir
+}
+
+
+tasks.register('printJavaVersion') {
+    doLast {
+        println "Java version: ${System.getProperty('java.version')}"
+        println "JVM version: ${System.getProperty('java.vm.version')}"
+        println "JVM name: ${System.getProperty('java.vm.name')}"
+    }
+}
