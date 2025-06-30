@@ -1,8 +1,6 @@
 package chan99k;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.ServerSocket;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
@@ -16,7 +14,6 @@ import org.springframework.web.servlet.DispatcherServlet;
 
 import chan99k.config.SwaggerConfig;
 import chan99k.config.WebConfig;
-
 
 public class Main {
 
@@ -55,7 +52,7 @@ public class Main {
 				}
 			}
 
-			// WEB-INF 디렉토리 확인 - 웹 애플리케이션 설정 및 리소스 디렉토리
+			// WEB-INF 디렉토리 확인 - 웹 애플리케이션 설정 및 리소스 디렉토리 : 할 필요 없음 정적 리소스 없으니
 			File webInfDir = new File(webAppDir, "WEB-INF");
 			if (!webInfDir.exists()) {
 				if (webInfDir.mkdirs()) {
