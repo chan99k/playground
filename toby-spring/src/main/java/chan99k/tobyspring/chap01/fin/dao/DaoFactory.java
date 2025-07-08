@@ -22,8 +22,8 @@ public class DaoFactory {
 
 	@Bean(name = "chap01UserDao")
 	public UserDao userDao() {
-		UserDao userDao = new UserDao();
-		userDao.setDataSource(dataSource());
+		UserDao userDao = new NUserDao();
+		// userDao.setDataSource(dataSource());
 		return userDao;
 	}
 }
