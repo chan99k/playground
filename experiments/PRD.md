@@ -1,6 +1,6 @@
 # 프로젝트: 구구킴 기술 블로그 및 리뷰 플랫폼 - 제품 요구사항 문서 (PRD)
 
-**버전: 1.4**
+**버전: 1.7**
 **문서 목적:** 본 문서는 프로젝트의 목표, 기능, 데이터 모델, 기술적 설계를 상세히 정의하여 개발의 방향성과 일관성을 확보하는 것을 목적으로 한다.
 
 ---
@@ -14,13 +14,13 @@
 
 ## 2. 사용자 역할 (User Roles)
 
-시스템에는 세 가지 유형의 사용자 역할이 존재한다.
+시스템에는 인증된 사용자 역할과 개념적인 비인증 사용자 역할이 존재한다.
 
 | 역할 | 설명 | 주요 권한 |
 | :--- | :--- | :--- |
-| **`AMBASSADOR`** | 시스템의 주 콘텐츠 생성자. | 콘텐츠(Story, RestaurantReview) 생성/수정/삭제. |
-| **`MEMBER`** | 회원가입을 통해 인증된 사용자. | 콘텐츠 평가, 비평, 댓글 등 모든 상호작용 가능. |
-| **`GUEST`** | 비로그인 익명 사용자. | 콘텐츠 조회, 일부 제한된 상호작용(예: 댓글) 가능. |
+| **`AMBASSADOR`** | 시스템의 주 콘텐츠 생성자. (`UserRole` Enum) | 콘텐츠(Story, RestaurantReview) 생성/수정/삭제. |
+| **`MEMBER`** | 이메일 인증을 완료한 정식 가입 사용자. (`UserRole` Enum) | 콘텐츠 평가, 비평, 댓글 등 모든 상호작용 가능. |
+| **`GUEST`** | 비로그인 익명 사용자. (개념적 역할) | 콘텐츠 조회, 임시 정보(이름/비밀번호)를 이용한 댓글 작성/수정/삭제. |
 
 ---
 
@@ -28,20 +28,25 @@
 
 시스템을 구성하는 핵심 데이터 모델과 그 필드는 다음과 같다.
 
-**참고:** 모든 엔티티는 공통적으로 생성/수정 시간 및 주체와 같은 메타데이터 필드(`createdAt`, `lastModifiedAt`, `createdBy`, `lastModifiedBy`)를 추상 클래스로부터 상속받아 관리한다.
-
 ### 3.1. User
-- **설명:** 시스템 사용자.
+- **설명:** 시스템의 인증된 사용자. `PENDING`, `ACTIVE`, `DEACTIVATED`의 생명주기를 가진다.
 - **ID 타입:** `UUID`
 - **필드:**
   - `id (UUID)`: Primary Key.
-  - `name (String)`: 사용자 이름.
-  - `email (String)`: 로그인 ID로 사용되는 이메일 (Unique).
-  - `password (String)`: BCrypt로 해시된 비밀번호.
-  - `role (UserRole)`: 사용자의 역할 (`AMBASSADOR`, `MEMBER`, `GUEST`).
+  - `name (String)`: 사용자 닉네임 (Nullable, 변경 가능).
+  - `email (Email)`: 로그인 ID로 사용되는 이메일. **값 객체(Value Object)**.
+  - `password (Password)`: 해시된 비밀번호. **값 객체(Value Object)**.
+  - `role (UserRole)`: 사용자의 역할 (`AMBASSADOR`, `MEMBER`).
+  - `status (UserStatus)`: 사용자의 상태 (`PENDING`, `ACTIVE`, `DEACTIVATED`).
+- **주요 비즈니스 메서드:**
+  - `changeName(String newName)`: 닉네임을 변경합니다.
+  - `changePassword(Password newPassword)`: 비밀번호를 변경합니다.
+  - `activate()`: 사용자를 `PENDING`에서 `ACTIVE` 상태로 활성화합니다.
+  - `deactivate()`: 사용자를 `DEACTIVATED` 상태로 비활성화(논리적 삭제)합니다.
+  - `checkPassword(String rawPassword, PasswordEncoder encoder)`: `ACTIVE` 상태일 때만 비밀번호 일치 여부를 확인합니다.
 
 ### 3.2. Story
-- **설명:** 기술 블로그 포스트. 수정 가능한 "살아있는 문서" 타입의 콘텐츠.
+- **설명:** 기술 블로그 포스트. 수정 가능한 "살아있는 문서" 타입의 콘텐츠. `Authorable` 인터페이스를 구현한다.
 - **ID 타입:** `UUID`
 - **필드:**
   - `id (UUID)`: Primary Key.
@@ -50,9 +55,12 @@
   - `summary (String)`: 목록에 노출될 짧은 요약.
   - `markdownContent (String)`: 본문 내용 (Markdown 형식).
   - `thumbnailUrl (String)`: 대표 이미지 URL.
+- **주요 비즈니스 메서드:**
+  - `update(String newTitle, ...)`: 제목, 요약, 본문, 썸네일 등 Story의 내용을 수정합니다.
+  - `isOwnedBy(User user)`: `Authorable` 인터페이스로부터 상속받아 소유권을 확인합니다.
 
 ### 3.3. RestaurantReview
-- **설명:** 식당 리뷰 콘텐츠. 수정 가능한 "살아있는 문서" 타입의 콘텐츠.
+- **설명:** 식당 리뷰 콘텐츠. 수정 가능한 "살아있는 문서" 타입의 콘텐츠. `Authorable` 인터페이스를 구현한다.
 - **ID 타입:** `UUID`
 - **필드:**
   - `id (UUID)`: Primary Key.
@@ -62,18 +70,27 @@
   - `locationMemo (String)`: 사용자가 직접 작성한 위치 관련 메모.
   - `reviewText (String)`: 리뷰 본문.
   - `photoUrls (List<String>)`: 업로드된 사진들의 URL 목록.
+- **주요 비즈니스 메서드:**
+  - `update(String newRestaurantName, ...)`: 식당 이름, 위치 메모, 리뷰 본문, 사진 목록을 수정합니다.
+  - `isOwnedBy(User user)`: `Authorable` 인터페이스로부터 상속받아 소유권을 확인합니다.
 
 ### 3.4. Comment
-- **설명:** `Story` 또는 `RestaurantReview`에 대한 일반 댓글.
+- **설명:** `Story` 또는 `RestaurantReview`에 대한 댓글. 회원 또는 비회원(Guest)이 작성할 수 있다. `Authorable` 인터페이스를 구현한다.
 - **ID 타입:** `Long`
 - **필드:**
   - `id (Long)`: Primary Key.
   - `content (Content)`: 상위 콘텐츠 객체 참조.
-  - `author (User)`: 작성자 객체 참조 (FK: User.id).
+  - `author (User)`: 작성자 객체 참조 (회원일 경우, Nullable).
   - `text (String)`: 댓글 내용.
+  - `guestName (String)`: 비회원 작성자의 이름 (비회원일 경우).
+  - `guestPassword (String)`: 비회원 작성자의 임시 비밀번호 (해시됨, 비회원일 경우).
+- **주요 비즈니스 메서드:**
+  - `update(String newText)`: 댓글 내용을 수정합니다.
+  - `isOwnedBy(User user)`: `Authorable` 인터페이스로부터 상속받아 회원 작성자의 소유권을 확인합니다.
+  - `verifyGuestOwnership(String guestName, ...)`: 비회원 작성자의 소유권을 확인합니다.
 
 ### 3.5. Quote
-- **설명:** `Story` 본문의 특정 텍스트를 인용한 블록. 생성 후 수정되지 않는 "사건의 기록" 타입.
+- **설명:** `Story` 본문의 특정 텍스트를 인용한 블록. 생성 후 수정되지 않는 "사건의 기록" 타입. `Authorable` 인터페이스를 구현한다.
 - **ID 타입:** `Long`
 - **필드:**
   - `id (Long)`: Primary Key.
@@ -81,24 +98,32 @@
   - `author (User)`: 인용을 생성한 사용자 객체 참조.
   - `originalText (String)`: 인용된 원본 텍스트.
   - `textFragmentUrl (String)`: 해당 텍스트 위치로 바로 이동할 수 있는 URL Fragment.
+- **주요 비즈니스 메서드:**
+  - `isOwnedBy(User user)`: `Authorable` 인터페이스로부터 상속받아 소유권을 확인합니다. (수정 메서드 없음)
 
 ### 3.6. Critique
-- **설명:** `Quote`에 대한 사용자의 비평 또는 의견.
+- **설명:** `Quote`에 대한 사용자의 비평 또는 의견. `Authorable` 인터페이스를 구현한다.
 - **ID 타입:** `Long`
 - **필드:**
   - `id (Long)`: Primary Key.
   - `quote (Quote)`: 비평의 대상이 된 Quote 객체 참조.
   - `author (User)`: 비평을 작성한 사용자 객체 참조.
   - `critiqueText (String)`: 비평 내용.
+- **주요 비즈니스 메서드:**
+  - `update(String newCritiqueText)`: 비평 내용을 수정합니다.
+  - `isOwnedBy(User user)`: `Authorable` 인터페이스로부터 상속받아 소유권을 확인합니다.
 
 ### 3.7. Rating
-- **설명:** `Story` 또는 `RestaurantReview`에 대한 사용자의 평점. 생성 후 수정되지 않는 "사건의 기록" 타입.
+- **설명:** `Story` 또는 `RestaurantReview`에 대한 사용자의 평점. 생성 후 수정되지 않는 "사건의 기록" 타입. `Authorable` 인터페이스를 구현한다.
 - **ID 타입:** `Long`
 - **필드:**
   - `id (Long)`: Primary Key.
   - `content (Content)`: 평점 대상 콘텐츠 객체 참조.
   - `user (User)`: 평점을 남긴 사용자 객체 참조.
   - `score (double)`: 사용자가 부여한 점수 (1.0 ~ 5.0).
+- **주요 비즈니스 메서드:**
+  - `getAuthor()`: `Authorable` 인터페이스의 계약을 이행하기 위해 `user` 필드를 반환합니다.
+  - `isOwnedBy(User user)`: `Authorable` 인터페이스로부터 상속받아 소유권을 확인합니다. (수정 메서드 없음)
 
 ### 3.8. TrustScore
 - **설명:** 콘텐츠의 계산된 신뢰도 점수. 시스템에 의해 생성 및 관리됨.
@@ -109,6 +134,8 @@
   - `score (double)`: 계산된 최종 신뢰도 점수.
   - `calculatedAt (Instant)`: 점수가 마지막으로 계산된 시점 (UTC).
   - `algorithmVersion (String)`: 점수 계산에 사용된 알고리즘 버전.
+- **주요 비즈니스 메서드:**
+  - `update(double newScore, String newAlgorithmVersion)`: 신뢰도 점수를 새로운 값으로 갱신하고, 계산 시점과 알고리즘 버전을 기록합니다.
 
 ---
 
@@ -123,7 +150,7 @@
   1.  **기본 점수 (가중 평균):** 사용자들이 제출한 `Rating`(평점)을 역할별 가중치를 적용하여 평균을 계산한다.
     - **가중치 (설정으로 관리):**
       - `MEMBER`: 2.0
-      - `GUEST`: 1.0
+      - `GUEST`: 1.0 (비회원이 남긴 평점)
       - `AMBASSADOR`: 0.0 (작성자 본인의 평가는 점수 계산에서 제외)
     - **공식:** `BaseScore = Σ(rating * weight) / Σ(weight)`
   2.  **비평 보너스 (Critique Bonus):**
@@ -258,3 +285,91 @@ Ports and Adapters 아키텍처의 핵심은 **도메인(Domain) 계층이 외�
 ### 4. 성능 및 캐시 전략과의 연관성
 
 불변 엔티티는 **JPA 2차 캐시(Second-Level Cache)에 가장 이상적인 후보**이다. 데이터가 절대 변하지 않으므로 캐시를 만료시키거나 갱신할 필요가 없어, 데이터베이스 I/O를 획기적으로 줄이고 읽기 성능을 극대화할 수 있다. 이는 `Rating`이나 `Quote`처럼 조회가 빈번한 데이터에 매우 효과적인 최적화 전략이 될 수 있다.
+
+---
+
+## Appendix D. 값 객체(Value Object)와 도메인 인터페이스를 통한 순수성 강화
+
+### 1. 원칙 (Principle)
+
+- 도메인 모델의 표현력을 극대화하고 안정성을 높이기 위해, 원시 타입(Primitive Type)의 사용을 지양하고 의미 있는 값 객체를 적극적으로 활용한다.
+- 도메인 계층은 특정 프레임워크나 외부 기술에 대한 의존성을 가져서는 안 된다. 이를 위해 도메인 내에 필요한 인터페이스를 정의하고, 실제 구현은 외부 계층(Adapter)에 위임한다.
+
+### 2. 구현 전략 (Implementation Strategy)
+
+- **`Email`, `Password` 값 객체:**
+  - `java.lang.String` 대신, `Email`과 `Password`라는 `record` 기반의 불변 값 객체를 정의한다.
+  - 각 값 객체는 생성 시점에 자체적으로 유효성 검증(이메일 형식, 비밀번호 정책 등)을 수행하여, 항상 유효한 상태임이 보장된다.
+  - `Password` 객체는 비밀번호 비교(`matches`)와 같은 관련 비즈니스 행위를 직접 포함하여, 데이터와 행위가 함께 있는 응집도 높은 객체를 만든다.
+
+- **`PasswordEncoder` 도메인 인터페이스:**
+  - `Spring Security`의 `PasswordEncoder`에 직접 의존하는 대신, 도메인 계층 내에 동일한 역할을 하는 `PasswordEncoder` 인터페이스를 직접 정의한다.
+  - 실제 암호화 로직을 담은 구현체(Adapter)는 외부 인프라 계층에 위치하며, 이 인터페이스를 구현한다. 이를 통해 도메인은 특정 암호화 기술로부터 완벽하게 분리된다.
+
+### 3. 기대 효과 (Benefits)
+
+- **타입 안정성 및 명확성:** `createUser(String email, ...)` 보다 `createUser(Email email, ...)`이 코드의 의도를 훨씬 명확하게 전달한다.
+- **중앙화된 유효성 검증:** 비즈니스 규칙(유효성 검증)이 도메인 모델 내로 캡슐화되어, 시스템 전반에 걸쳐 일관성을 유지하고 중복 코드를 방지한다.
+- **테스트 용이성 및 유연성:** 프레임워크에 비종속적인 순수한 도메인 모델은 단위 테스트가 매우 용이하며, 향후 기술 스택 변경에 유연하게 대처할 수 있다.
+
+---
+
+## Appendix E. 사용자 생명주기 및 익명 콘텐츠 관리
+
+### 1. 사용자 생명주기 (User Lifecycle)
+
+- **원칙:** 사용자는 가입부터 탈퇴까지 명확한 생명주기를 가지며, 이는 `UserStatus` Enum을 통해 관리된다. 이를 통해 시스템은 사용자의 상태에 따라 각기 다른 비즈니스 규칙을 적용할 수 있다.
+
+- **상태 흐름:** `PENDING` → `ACTIVE` → `DEACTIVATED`
+  - **`PENDING` (가입 대기):**
+    - 사용자가 회원가입을 신청한 직후의 초기 상태.
+    - 이메일 인증을 완료하기 전까지 이 상태를 유지한다.
+    - `PENDING` 상태의 사용자는 로그인할 수 없다.
+  - **`ACTIVE` (활성):**
+    - 이메일 인증을 완료한 정상적인 사용자 상태.
+    - 시스템의 모든 정상적인 기능(로그인, 콘텐츠 작성, 평가 등)을 이용할 수 있다.
+    - `User` 엔티티의 `activate()` 메서드를 통해 `PENDING`에서 `ACTIVE`로 전환된다.
+  - **`DEACTIVATED` (비활성 / 탈퇴):**
+    - 사용자가 탈퇴를 신청한 경우의 상태.
+    - 이는 물리적 삭제(Hard Delete)가 아닌 논리적 삭제(Soft Delete) 방식이다.
+    - 사용자의 데이터는 보존되지만, 로그인이 불가능하며 모든 활동이 제한된다.
+    - `User` 엔티티의 `deactivate()` 메서드를 통해 `ACTIVE`에서 `DEACTIVATED`로 전환된다.
+
+### 2. 익명 사용자 콘텐츠 관리 (Anonymous Content Management)
+
+- **원칙:** 비로그인 사용자(Guest)도 `User` 계정 생성 없이 일부 콘텐츠(예: `Comment`)를 작성할 수 있어야 한다. 이들의 콘텐츠 수정/삭제 권한은 `User` 시스템과 독립적으로 관리된다.
+
+- **구현 전략:**
+  - `Comment`와 같은 익명 작성이 가능한 엔티티는 `author(User)` 필드를 Nullable로 설정한다.
+  - 대신, 익명 사용자를 위한 `guestName(String)`과 `guestPassword(String)` 필드를 추가한다.
+  - **작성:** 비회원이 댓글을 작성할 때, 이름과 임시 비밀번호를 함께 입력받는다. 비밀번호는 해시 처리되어 `guestPassword`에 저장된다.
+  - **수정/삭제:** 비회원이 자신의 댓글을 수정/삭제하고자 할 때, 저장된 `guestPassword` 해시와 입력한 비밀번호를 비교하여 권한을 확인한다.
+  - **기대 효과:** 이 방식을 통해 `User` 테이블에 불필요한 임시 계정이 생성되는 것을 방지하고, 익명 커뮤니티의 사용자 경험을 제공하면서도 콘텐츠 관리가 가능해진다.
+
+---
+
+## Appendix F. 역할 인터페이스(Role Interface)를 통한 행위의 재사용: Authorable
+
+### 1. 문제 인식 (Problem Recognition)
+
+- `isOwnedBy(User user)` 라는 소유권 확인 로직이 `Content`, `Quote`, `Critique`, `Comment`, `Rating` 등 여러 엔티티에 걸쳐 중복으로 존재했습니다.
+- 이는 DRY(Don't Repeat Yourself) 원칙을 위배하며, 향후 로직 변경 시 여러 파일을 수정해야 하는 유지보수성의 문제를 야기합니다.
+
+### 2. 상속의 한계 (Limitation of Inheritance)
+
+- 가장 먼저 고려할 수 있는 해결책은 공통 로직을 슈퍼클래스로 올리는 것입니다.
+- 하지만, 소유권 확인이 필요한 엔티티들은 동일한 상속 계층에 속해있지 않습니다. (`Story`는 `Content`를 상속하지만, `Quote`는 `Content`가 아닙니다.)
+- 따라서, 특정 슈퍼클래스(예: `Content`)에만 로직을 올리는 것은 문제를 부분적으로만 해결할 뿐, 근본적인 해결책이 될 수 없습니다.
+
+### 3. 해결책: `Authorable` 인터페이스 정의 (Solution: Defining the `Authorable` Interface)
+
+- 이 문제를 해결하기 위해, 클래스의 구체적인 타입(IS-A)이 아닌, 공통된 **역할(Role)** 또는 **행위(Behavior)**에 집중합니다.
+- "작성자를 가질 수 있고, 소유권 확인이 가능하다"는 역할을 `Authorable`이라는 인터페이스로 정의합니다.
+- `isOwnedBy` 로직은 인터페이스의 `default` 메서드로 구현하여, 이 인터페이스를 구현하는 모든 클래스가 코드를 재사용할 수 있도록 합니다.
+- 각 엔티티는 `implements Authorable`을 선언하고, `getAuthor()`라는 계약 메서드만 구현하면 됩니다.
+
+### 4. 기대 효과 (Benefits)
+
+- **완벽한 중복 제거:** 상속 계층과 무관하게 모든 관련 클래스의 중복 코드를 완벽히 제거합니다.
+- **유연성 및 확장성:** 향후 '소유 가능'한 새로운 엔티티가 추가되더라도, 상속 구조를 변경할 필요 없이 인터페이스 구현만으로 행위를 쉽게 부여할 수 있습니다.
+- **명확한 의도:** `implements Authorable` 선언만으로 해당 클래스가 어떤 역할을 수행하는지 명확하게 드러나, 코드의 가독성과 이해도를 높입니다.
