@@ -10,7 +10,7 @@ import java.io.Serializable;
  * 4. (선택) Serializable 인터페이스를 구현한다.
  */
 public class PersonBean implements Serializable {
-
+    // 2. private 접근 지정자 필드
     private String name;
     private int age;
     private boolean isStudent;
@@ -36,7 +36,7 @@ public class PersonBean implements Serializable {
         this.age = age;
     }
 
-    // boolean 타입의 getter는 'is'로 시작할 수 있다.
+    // boolean 타입의 getter는 'is' 로 시작할 수 있다.
     public boolean isStudent() {
         return isStudent;
     }
