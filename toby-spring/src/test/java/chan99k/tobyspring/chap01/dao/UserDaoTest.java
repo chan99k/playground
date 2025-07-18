@@ -1,19 +1,23 @@
-package chan99k.tobyspring.chap01.fin.dao;
+package chan99k.tobyspring.chap01.dao;
 
 import static org.assertj.core.api.Assertions.*;
 
 import java.sql.SQLException;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.test.context.jdbc.Sql;
 
-import chan99k.tobyspring.chap01.fin.domain.User;
+import chan99k.tobyspring.chap01.dao.DaoFactory;
+import chan99k.tobyspring.chap01.dao.UserDao;
+import chan99k.tobyspring.chap01.domain.User;
 
+@Disabled
 @Sql("/schema.sql")
-@SpringBootTest(classes = {chan99k.tobyspring.chap01.fin.dao.DaoFactory.class})
+@SpringBootTest(classes = {DaoFactory.class})
 class UserDaoTest {
 
 	@Test

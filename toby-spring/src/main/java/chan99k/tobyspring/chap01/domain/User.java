@@ -1,4 +1,4 @@
-package chan99k.tobyspring.chap01.fin.domain;
+package chan99k.tobyspring.chap01.domain;
 
 import lombok.Data;
 

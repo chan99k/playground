@@ -1,11 +1,11 @@
-package chan99k.tobyspring.chap01.fin.dao;
+package chan99k.tobyspring.chap01.dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import chan99k.tobyspring.chap01.fin.domain.User;
+import chan99k.tobyspring.chap01.domain.User;
 import lombok.Setter;
 
 @Setter

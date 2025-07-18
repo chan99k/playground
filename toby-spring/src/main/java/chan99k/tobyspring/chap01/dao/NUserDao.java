@@ -1,4 +1,4 @@
-package chan99k.tobyspring.chap01.fin.dao;
+package chan99k.tobyspring.chap01.dao;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
