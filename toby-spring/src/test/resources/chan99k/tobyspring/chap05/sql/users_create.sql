@@ -1,10 +1,11 @@
-
 DROP TABLE IF EXISTS users;
-CREATE TABLE users (
-    id VARCHAR(10) PRIMARY KEY,
-    name VARCHAR(20) NOT NULL,
-    password VARCHAR(10) NOT NULL,
-    user_level INT NOT NULL,
-    login INT NOT NULL,
-    recommend INT NOT NULL
-);
+create table users
+(
+    id        varchar(10) primary key,
+    name      varchar(20) not null,
+    email     varchar(20) not null,
+    password  varchar(10) not null,
+    level     tinyint     not null,
+    login     int         not null,
+    recommend int         not null
+)

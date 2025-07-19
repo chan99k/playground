@@ -25,62 +25,65 @@
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <!-- ============ JTA TransactionManager (Atomikos) ============ -->
-<!--    <bean id="userTransaction" class="com.atomikos.icatch.jta.UserTransactionImp"/>-->
-<!--    <bean id="atomikosTransactionManager" class="com.atomikos.icatch.jta.UserTransactionManager">-->
-<!--        <property name="forceShutdown" value="false"/>-->
-<!--    </bean>-->
+    <bean id="mailSender" class="chan99k.tobyspring.chap05.service.DummyMailSender">
+    </bean>
 
-<!--    <bean id="transactionManager" class="org.springframework.transaction.jta.JtaTransactionManager">-->
-<!--        <property name="userTransaction" ref="userTransaction"/>-->
-<!--        <property name="transactionManager" ref="atomikosTransactionManager"/>-->
-<!--    </bean>-->
+    <!-- ============ JTA TransactionManager (Atomikos) ============ -->
+    <!--    <bean id="userTransaction" class="com.atomikos.icatch.jta.UserTransactionImp"/>-->
+    <!--    <bean id="atomikosTransactionManager" class="com.atomikos.icatch.jta.UserTransactionManager">-->
+    <!--        <property name="forceShutdown" value="false"/>-->
+    <!--    </bean>-->
+
+    <!--    <bean id="transactionManager" class="org.springframework.transaction.jta.JtaTransactionManager">-->
+    <!--        <property name="userTransaction" ref="userTransaction"/>-->
+    <!--        <property name="transactionManager" ref="atomikosTransactionManager"/>-->
+    <!--    </bean>-->
 
     <!-- ============ XA DataSource 1 ============ -->
-<!--    <bean id="dataSourceA" class="com.atomikos.jdbc.AtomikosDataSourceBean" init-method="init" destroy-method="close">-->
-<!--        <property name="uniqueResourceName" value="dbA"/>-->
-<!--        <property name="xaDataSourceClassName" value="org.h2.jdbcx.JdbcDataSource"/>-->
-<!--        <property name="xaProperties">-->
-<!--            <props>-->
-<!--                <prop key="URL">jdbc:h2:mem:dbA;DB_CLOSE_DELAY=-1</prop>-->
-<!--                <prop key="user">sa</prop>-->
-<!--                <prop key="password"></prop>-->
-<!--            </props>-->
-<!--        </property>-->
-<!--    </bean>-->
+    <!--    <bean id="dataSourceA" class="com.atomikos.jdbc.AtomikosDataSourceBean" init-method="init" destroy-method="close">-->
+    <!--        <property name="uniqueResourceName" value="dbA"/>-->
+    <!--        <property name="xaDataSourceClassName" value="org.h2.jdbcx.JdbcDataSource"/>-->
+    <!--        <property name="xaProperties">-->
+    <!--            <props>-->
+    <!--                <prop key="URL">jdbc:h2:mem:dbA;DB_CLOSE_DELAY=-1</prop>-->
+    <!--                <prop key="user">sa</prop>-->
+    <!--                <prop key="password"></prop>-->
+    <!--            </props>-->
+    <!--        </property>-->
+    <!--    </bean>-->
 
     <!-- ============ XA DataSource 2 ============ -->
-<!--    <bean id="dataSourceB" class="com.atomikos.jdbc.AtomikosDataSourceBean" init-method="init" destroy-method="close">-->
-<!--        <property name="uniqueResourceName" value="dbB"/>-->
-<!--        <property name="xaDataSourceClassName" value="org.h2.jdbcx.JdbcDataSource"/>-->
-<!--        <property name="xaProperties">-->
-<!--            <props>-->
-<!--                <prop key="URL">jdbc:h2:mem:dbB;DB_CLOSE_DELAY=-1</prop>-->
-<!--                <prop key="user">sa</prop>-->
-<!--                <prop key="password"></prop>-->
-<!--            </props>-->
-<!--        </property>-->
-<!--    </bean>-->
+    <!--    <bean id="dataSourceB" class="com.atomikos.jdbc.AtomikosDataSourceBean" init-method="init" destroy-method="close">-->
+    <!--        <property name="uniqueResourceName" value="dbB"/>-->
+    <!--        <property name="xaDataSourceClassName" value="org.h2.jdbcx.JdbcDataSource"/>-->
+    <!--        <property name="xaProperties">-->
+    <!--            <props>-->
+    <!--                <prop key="URL">jdbc:h2:mem:dbB;DB_CLOSE_DELAY=-1</prop>-->
+    <!--                <prop key="user">sa</prop>-->
+    <!--                <prop key="password"></prop>-->
+    <!--            </props>-->
+    <!--        </property>-->
+    <!--    </bean>-->
 
     <!-- ============ Hibernate 설정 (JTA 연동) ============ -->
-<!--    <bean id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">-->
-<!--        <property name="dataSource" ref="dataSourceA" /> &lt;!&ndash; 기본 연결은 dataSourceA &ndash;&gt;-->
-<!--        <property name="packagesToScan" value="com.example.domain"/>-->
-<!--        <property name="hibernateProperties">-->
-<!--            <props>-->
-<!--                <prop key="hibernate.transaction.coordinator_class">jta</prop>-->
-<!--                <prop key="hibernate.transaction.jta.platform">-->
-<!--                    com.atomikos.icatch.jta.hibernate5.AtomikosPlatform-->
-<!--                </prop>-->
-<!--                <prop key="hibernate.current_session_context_class">jta</prop>-->
-<!--                <prop key="hibernate.dialect">org.hibernate.dialect.H2Dialect</prop>-->
-<!--                <prop key="hibernate.hbm2ddl.auto">update</prop>-->
-<!--                <prop key="hibernate.show_sql">true</prop>-->
-<!--            </props>-->
-<!--        </property>-->
-<!--    </bean>-->
+    <!--    <bean id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">-->
+    <!--        <property name="dataSource" ref="dataSourceA" /> &lt;!&ndash; 기본 연결은 dataSourceA &ndash;&gt;-->
+    <!--        <property name="packagesToScan" value="com.example.domain"/>-->
+    <!--        <property name="hibernateProperties">-->
+    <!--            <props>-->
+    <!--                <prop key="hibernate.transaction.coordinator_class">jta</prop>-->
+    <!--                <prop key="hibernate.transaction.jta.platform">-->
+    <!--                    com.atomikos.icatch.jta.hibernate5.AtomikosPlatform-->
+    <!--                </prop>-->
+    <!--                <prop key="hibernate.current_session_context_class">jta</prop>-->
+    <!--                <prop key="hibernate.dialect">org.hibernate.dialect.H2Dialect</prop>-->
+    <!--                <prop key="hibernate.hbm2ddl.auto">update</prop>-->
+    <!--                <prop key="hibernate.show_sql">true</prop>-->
+    <!--            </props>-->
+    <!--        </property>-->
+    <!--    </bean>-->
 
     <!-- ============ 트랜잭션 어노테이션 활성화 ============ -->
-<!--    <tx:annotation-driven transaction-manager="transactionManager"/>-->
+    <!--    <tx:annotation-driven transaction-manager="transactionManager"/>-->
 
 </beans>

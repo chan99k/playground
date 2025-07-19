@@ -12,6 +12,7 @@ import lombok.Setter;
 public class User {
 	String id;
 	String name;
+	String email;
 	String password;
 	Level level;
 	int login;
@@ -21,8 +22,7 @@ public class User {
 		Level nextLevel = this.level.nextLevel();
 		if (nextLevel == null) {
 			throw new IllegalStateException(this.level + "은 업그레이드가 불가능합니다");
-		}
-		else {
+		} else {
 			this.level = nextLevel;
 		}
 	}
