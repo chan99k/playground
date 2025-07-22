@@ -46,7 +46,7 @@ public class Person {
 		return new PersonBuilder();
 	}
 
-	// static 내부 클래스로 Builder를 정의한다.
+	// static nested 클래스로 Builder를 정의한다.
 	public static class PersonBuilder {
 		private String firstName;
 		private String lastName;
