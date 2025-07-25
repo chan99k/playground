@@ -1,4 +1,4 @@
-package chan99k.tobyspring.chap06.service;
+package chan99k.tobyspring.chap05.service;
 
 import static chan99k.tobyspring.chap05.service.UserService.*;
 import static org.assertj.core.api.Assertions.*;
@@ -23,15 +23,14 @@ import org.springframework.transaction.PlatformTransactionManager;
 import chan99k.tobyspring.chap05.dao.UserDao;
 import chan99k.tobyspring.chap05.domain.Level;
 import chan99k.tobyspring.chap05.domain.User;
-import chan99k.tobyspring.chap05.service.UserService;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(locations = "classpath:chan99k/tobyspring/chap05/test-applicationContext.xml")
 @Sql(scripts = "/chan99k/tobyspring/chap05/sql/users_create.sql")
 @Sql(scripts = "/chan99k/tobyspring/chap05/sql/users_delete.sql")
-class UserServiceTest {
+class UserServiceImplTest {
 	@Autowired
-	chan99k.tobyspring.chap05.service.UserService userService;
+	UserService userService;
 	@Autowired
 	UserDao userDao;
 	@Autowired
@@ -106,7 +105,7 @@ class UserServiceTest {
 
 	@Test
 	public void upgradeAllOrNothing() throws Exception {
-		chan99k.tobyspring.chap05.service.UserService testUserService = new TestUserService(users.get(3).getId());
+		UserService testUserService = new TestUserService(users.get(3).getId());
 		testUserService.setUserDao(this.userDao);
 		testUserService.setTxManager(transactionManager);
 		testUserService.setMailSender(new MockMailSender());
