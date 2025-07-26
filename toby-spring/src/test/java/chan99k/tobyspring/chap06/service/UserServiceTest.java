@@ -4,6 +4,7 @@ import static chan99k.tobyspring.chap05.service.UserService.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
@@ -31,15 +33,15 @@ import lombok.Getter;
 @ContextConfiguration(locations = "classpath:chan99k/tobyspring/chap06/test-applicationContext.xml")
 @Sql(scripts = "/chan99k/tobyspring/chap05/sql/users_create.sql")
 @Sql(scripts = "/chan99k/tobyspring/chap05/sql/users_delete.sql")
-class UserServiceImplTest {
+class UserServiceTest {
+	@Autowired
+	ApplicationContext context;
 	@Autowired
 	UserServiceImpl userServiceImpl;
 	@Autowired
 	UserDao userDao;
 	@Autowired
 	PlatformTransactionManager transactionManager;
-	@Autowired
-	MailSender mailSender;
 
 	List<User> users;
 
@@ -81,7 +83,6 @@ class UserServiceImplTest {
 	}
 
 	@Test
-	@DirtiesContext
 	public void upgradeLevels() {
 		UserServiceImpl userServiceImpl = new UserServiceImpl();
 		MockUserDao mockUserDao = new MockUserDao(this.users);
@@ -137,25 +138,25 @@ class UserServiceImplTest {
 	}
 
 	@Test
+	@DirtiesContext // 다이내빅 프록시 팩토리 빈을 직접 만들어 사용할 때는 없앴다가 다시 등장한 컨텍스트 무효화 애너테이션
 	public void upgradeAllOrNothing() throws Exception {
 		TestUserService testUserService = new TestUserService(users.get(3).getId());
-
 		testUserService.setUserDao(userDao);
 		testUserService.setMailSender(new MockMailSender());
 
-		UserServiceTx userServiceTx = new UserServiceTx();
-		userServiceTx.setTransactionManager(transactionManager);
-		userServiceTx.setUserService(testUserService);
+		TxProxyFactoryBean txProxyFactoryBean = context.getBean("&userService", TxProxyFactoryBean.class);
+		txProxyFactoryBean.setTarget(testUserService);
 
+		UserService txUserService = (UserService) txProxyFactoryBean.getObject();
 		userDao.deleteAll();
 		for (User user : users) {
 			userDao.add(user);
 		}
 
 		try {
-			userServiceTx.upgradeLevels();
+			txUserService.upgradeLevels();
 			fail("TestUserServiceException expected");
-		} catch (TestUserServiceException e) {
+		} catch (TestUserServiceException ignored) {
 
 		}
 
