@@ -2,6 +2,7 @@ package chan99k.sakila.adapter.persistence.entities;
 
 import java.time.Instant;
 
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.ColumnDefault;
 
 import jakarta.persistence.Column;
@@ -16,6 +17,7 @@ import jakarta.persistence.Table;
 @lombok.Getter
 @lombok.Setter
 @Entity
+@BatchSize(size = 50)
 @Table(name = "film_actor")
 public class FilmActor {
 	@EmbeddedId
