@@ -32,5 +32,12 @@ logging:
           internal:
             StatefulPersistenceContext: TRACE
         cache: TRACE
+        loader: TRACE
+        event:
+          internal:
+            DefaultLoadEventListener: TRACE
+            DefaultInitializeCollectionEventListener: TRACE
+        persister:
+          entity: TRACE
     web: DEBUG
 
