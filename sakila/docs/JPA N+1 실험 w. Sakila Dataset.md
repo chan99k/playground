@@ -1,6 +1,6 @@
 # JPA N+1 실험 w. Sakila Dataset
 
-## 서론
+## Introduction
 JPA에서 N+1 문제가 발생한다는 것은 누구나 알 만큼 널리 알려져 있습니다. 해당 문제에 대한 해결책 또한 귀에 박히도록 들어 알고는 있었는데요, 다만 그런 이론적 해결책들이 실제로는 어떤 성능적 차이를 보이는지 궁금해졌습니다. 그래서 이번 글에서는 MySQL 에서 제공하는 오픈소스 데이터셋인 Sakila 를 활용하여 실험을 해 보려고 합니다.
 
 ### 실험 환경
@@ -19,14 +19,15 @@ FilmActor (5,462개)
 
 #### 테스트 시나리오
 1. **N+1 문제 재현**: 순수한 지연 로딩으로 전체 데이터 조회
-2. **@BatchSize**: 배치 크기별 성능 비교
-3. **@EntityGraph**: 선언적 즉시 로딩 (내부적으론 Fetch Join)
-4. **JPQL Fetch Join**: 명시적 JOIN 쿼리
+2. **EntityGraph**: 선언적 즉시 로딩 (내부적으론 Fetch Join)
+3. **JPQL Fetch Join**: 명시적 JOIN 쿼리
+4. **BatchSize**: 배치 사이즈 설정별 성능 비교
 
 ---
+
 먼저 이번 실험에 사용한 FilmActor 와 그 연관 엔티티는 다음과 같습니다.
 
-#### FilmActor.java<!-- {"fold":true} -->
+#### FilmActor.java
 ```java
 @Table(name = "film_actor")
 public class FilmActor {
@@ -49,7 +50,8 @@ public class FilmActor {
 
 }
 ```
-#### Actor.java<!-- {"fold":true} -->
+
+#### Actor.java
 ```java
 @Entity
 @Table(name = "actor")
@@ -65,7 +67,8 @@ public class Actor {
  private String lastName;
 }
 ```
-#### Film.java<!-- {"fold":true} -->
+
+#### Film.java
 ```java
 @Entity
 @Table(name = "film")
@@ -78,8 +81,10 @@ public class Film {
  private String title;
 }
 ```
-####
+
+
 ---
+
 ## 1. N + 1 재현하기
 ### 문제 상황 코드
 먼저, FilmActor 를 데이터베이스에 쿼리한 뒤, 지연 로딩이 설정된 영화 및 영화 배우 정보를 함께 조회하는 쿼리를 작성해보겠습니다.
@@ -99,10 +104,10 @@ List<FilmActorResponse> result = filmActors.stream()
 
 ### 성능 측정 결과
 **시도 1 (콜드 스타트):**
-```bash
+```log
 N+1 처리 시간: 1028ms, 결과 개수: 5462
 ```
-```bash
+```log
 2025-08-27T23:06:30.560+09:00  INFO 72639 --- [sakila] [nio-8080-exec-2] i.StatisticalLoggingSessionEventListener : Session Metrics {
     2556375 nanoseconds spent acquiring 1 JDBC connections;
     0 nanoseconds spent releasing 0 JDBC connections;
@@ -119,10 +124,10 @@ N+1 처리 시간: 1028ms, 결과 개수: 5462
 ```
 
 **시도 2:**
-```bash
+```log
 N+1 처리 시간: 663ms, 결과 개수: 5462
 ```
-```bash
+```log
 025-08-27T23:07:44.390+09:00  INFO 72639 --- [sakila] [nio-8080-exec-4] i.StatisticalLoggingSessionEventListener : Session Metrics {
     5188958 nanoseconds spent acquiring 1 JDBC connections;
     0 nanoseconds spent releasing 0 JDBC connections;
@@ -139,10 +144,10 @@ N+1 처리 시간: 663ms, 결과 개수: 5462
 ```
 
 **시도 3 :**
-```bash
+```log
 N+1 처리 시간: 501ms, 결과 개수: 5462
 ```
-```bash
+```log
 2025-08-27T23:08:34.114+09:00  INFO 72639 --- [sakila] [nio-8080-exec-8] i.StatisticalLoggingSessionEventListener : Session Metrics {
     1840917 nanoseconds spent acquiring 1 JDBC connections;
     0 nanoseconds spent releasing 0 JDBC connections;
@@ -159,7 +164,7 @@ N+1 처리 시간: 501ms, 결과 개수: 5462
 ```
 
 ### Hibernate Session Metrics 분석
-세 번의 실행 모두에서 공통적으로 **1,198개의 JDBC 쿼리**가 실행되었습니다:
+세 번의 실행 모두에서 공통적으로 **1,198개의 JDBC 쿼리**가 실행되었습니다
 | 시도 | 총 처리시간 | JDBC 준비시간 | JDBC 실행시간 | 쿼리 수 |
 |:-:|:-:|:-:|:-:|:-:|
 | 1회차 | 1,028ms | 42.9ms | 720.4ms | 1,198개 |
@@ -200,7 +205,7 @@ where
 
 이론적 최대치인 5,462개보다 훨씬 적은 쿼리가 실행된 이유는 JPA 영속성 컨텍스트의 1차 캐시 덕분에 동일한 Film이나 Actor는 추가 쿼리 없이 캐시에서 조회할 수 있었기 때문으로 확인됩니다. 아래와 같이 캐시 히트가 발생하는 로그를 확인할 수 있습니다.
 
-```shell
+```log
 2025-08-27T23:26:25.725+09:00 TRACE 73278 --- [sakila] [nio-8080-exec-2] o.h.e.internal.DefaultLoadEventListener  : Loading entity: [chan99k.sakila.adapter.persistence.entities.Language#1]
 2025-08-27T23:26:25.725+09:00 TRACE 73278 --- [sakila] [nio-8080-exec-2] o.h.e.internal.DefaultLoadEventListener  : Entity proxy found in session cache
 ```
@@ -209,5 +214,165 @@ where
 ---
 ## 2. EntityGraph 사용
 
-추가 작성 중...
+### 구현 방법
+`@EntityGraph` 어노테이션을 사용하여 를 사용하여 선언적으로 연관관계를 즉시 로딩할 수 있습니다.
+
+
+```java
+@Repository
+public interface FilmActorRepository extends JpaRepository<FilmActor, FilmActorId> {
+    
+    @EntityGraph(attributePaths = {"film", "actor"})
+    @Query("SELECT fa FROM FilmActor fa ORDER BY fa.film.id")
+    List<FilmActor> findAllWithEntityGraph();
+}
+```
+
+### 성능 측정 결과
+**@EntityGraph 적용**
+
+**시도 1 (콜드 스타트):**
+```log
+EntityGraph 처리 시간: 186ms, 결과 개수: 5462
+```
+```log
+2025-09-01T23:17:30.946+09:00  INFO 66628 --- [sakila] [nio-8080-exec-4] i.StatisticalLoggingSessionEventListener : Session Metrics {
+      11074291 nanoseconds spent acquiring 1 JDBC connections;
+      0 nanoseconds spent releasing 0 JDBC connections;
+      177917 nanoseconds spent preparing 1 JDBC statements;
+      69583250 nanoseconds spent executing 1 JDBC statements;
+      0 nanoseconds spent executing 0 JDBC batches;
+      0 nanoseconds spent performing 0 L2C puts;
+      0 nanoseconds spent performing 0 L2C hits;
+      0 nanoseconds spent performing 0 L2C misses;
+      0 nanoseconds spent executing 0 flushes (flushing a total of 0 entities and 0 collections);
+      2625 nanoseconds spent executing 1 pre-partial-flushes;
+      3583 nanoseconds spent executing 1 partial-flushes (flushing a total of 0 entities and 0 collections)
+  }
+```
+
+**시도 2:**
+```log
+EntityGraph 처리 시간: 204ms, 결과 개수: 5462
+```
+```log
+2025-09-01T23:18:03.126+09:00  INFO 66628 --- [sakila] [nio-8080-exec-5] i.StatisticalLoggingSessionEventListener : Session Metrics {
+      6035625 nanoseconds spent acquiring 1 JDBC connections;
+      0 nanoseconds spent releasing 0 JDBC connections;
+      350083 nanoseconds spent preparing 1 JDBC statements;
+      74597208 nanoseconds spent executing 1 JDBC statements;
+      0 nanoseconds spent executing 0 JDBC batches;
+      0 nanoseconds spent performing 0 L2C puts;
+      0 nanoseconds spent performing 0 L2C hits;
+      0 nanoseconds spent performing 0 L2C misses;
+      0 nanoseconds spent executing 0 flushes (flushing a total of 0 entities and 0 collections);
+      19667 nanoseconds spent executing 1 pre-partial-flushes;
+      3084 nanoseconds spent executing 1 partial-flushes (flushing a total of 0 entities and 0 collections)
+  }
+```
+
+**시도 3 :**
+```log
+ EntityGraph 처리 시간: 171ms, 결과 개수: 5462
+```
+```log
+2025-09-01T23:18:34.478+09:00  INFO 66628 --- [sakila] [io-8080-exec-10] i.StatisticalLoggingSessionEventListener : Session Metrics {
+      7127625 nanoseconds spent acquiring 1 JDBC connections;
+      0 nanoseconds spent releasing 0 JDBC connections;
+      226625 nanoseconds spent preparing 1 JDBC statements;
+      73370875 nanoseconds spent executing 1 JDBC statements;
+      0 nanoseconds spent executing 0 JDBC batches;
+      0 nanoseconds spent performing 0 L2C puts;
+      0 nanoseconds spent performing 0 L2C hits;
+      0 nanoseconds spent performing 0 L2C misses;
+      0 nanoseconds spent executing 0 flushes (flushing a total of 0 entities and 0 collections);
+      7000 nanoseconds spent executing 1 pre-partial-flushes;
+      4459 nanoseconds spent executing 1 partial-flushes (flushing a total of 0 entities and 0 collections)
+  }
+```
+
+### Hibernate Session Metrics 분석
+
+### SQL 실행 로그 예시
+
+#### 쿼리 구성 분석
+
+
+---
+
+## 3. Fetch Join 사용
+
+### 구현 방법
+
+### 성능 측정 결과
+**Fetch Join 적용**
+
+**시도 1 (콜드 스타트):**
+```log
+FetchJoin 처리 시간: 268ms, 결과 개수: 5462
+```
+```log
+  2025-09-01T23:19:22.842+09:00  INFO 66688 --- [sakila] [nio-8080-exec-2] i.StatisticalLoggingSessionEventListener : Session Metrics {
+      1550375 nanoseconds spent acquiring 1 JDBC connections;
+      0 nanoseconds spent releasing 0 JDBC connections;
+      3293834 nanoseconds spent preparing 1 JDBC statements;
+      63100167 nanoseconds spent executing 1 JDBC statements;
+      0 nanoseconds spent executing 0 JDBC batches;
+      0 nanoseconds spent performing 0 L2C puts;
+      0 nanoseconds spent performing 0 L2C hits;
+      0 nanoseconds spent performing 0 L2C misses;
+      0 nanoseconds spent executing 0 flushes (flushing a total of 0 entities and 0 collections);
+      68833 nanoseconds spent executing 1 pre-partial-flushes;
+      4583 nanoseconds spent executing 1 partial-flushes (flushing a total of 0 entities and 0 collections)
+  }
+```
+
+**시도 2:**
+```log
+FetchJoin 처리 시간: 207ms, 결과 개수: 5462
+```
+```log
+  2025-09-01T23:19:49.783+09:00  INFO 66688 --- [sakila] [nio-8080-exec-4] i.StatisticalLoggingSessionEventListener : Session Metrics {
+      3752500 nanoseconds spent acquiring 1 JDBC connections;
+      0 nanoseconds spent releasing 0 JDBC connections;
+      704250 nanoseconds spent preparing 1 JDBC statements;
+      78845833 nanoseconds spent executing 1 JDBC statements;
+      0 nanoseconds spent executing 0 JDBC batches;
+      0 nanoseconds spent performing 0 L2C puts;
+      0 nanoseconds spent performing 0 L2C hits;
+      0 nanoseconds spent performing 0 L2C misses;
+      0 nanoseconds spent executing 0 flushes (flushing a total of 0 entities and 0 collections);
+      17083 nanoseconds spent executing 1 pre-partial-flushes;
+      5042 nanoseconds spent executing 1 partial-flushes (flushing a total of 0 entities and 0 collections)
+  }
+```
+
+**시도 3 :**
+```log
+FetchJoin 처리 시간: 233ms, 결과 개수: 5462
+```
+```log
+  2025-09-01T23:20:31.766+09:00  INFO 66688 --- [sakila] [nio-8080-exec-8] i.StatisticalLoggingSessionEventListener : Session Metrics {
+      4761084 nanoseconds spent acquiring 1 JDBC connections;
+      0 nanoseconds spent releasing 0 JDBC connections;
+      354542 nanoseconds spent preparing 1 JDBC statements;
+      69505709 nanoseconds spent executing 1 JDBC statements;
+      0 nanoseconds spent executing 0 JDBC batches;
+      0 nanoseconds spent performing 0 L2C puts;
+      0 nanoseconds spent performing 0 L2C hits;
+      0 nanoseconds spent performing 0 L2C misses;
+      0 nanoseconds spent executing 0 flushes (flushing a total of 0 entities and 0 collections);
+      7333 nanoseconds spent executing 1 pre-partial-flushes;
+      1334 nanoseconds spent executing 1 partial-flushes (flushing a total of 0 entities and 0 collections)
+  }
+```
+
+### Hibernate Session Metrics 분석
+
+### SQL 실행 로그 예시
+
+#### 쿼리 구성 분석
+
+
+---
 

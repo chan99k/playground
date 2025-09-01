@@ -31,13 +31,13 @@ logging:
         engine:
           internal:
             StatefulPersistenceContext: TRACE
-        cache: TRACE
+        persister:
+          entity: TRACE
+        cache:
         loader: TRACE
         event:
           internal:
             DefaultLoadEventListener: TRACE
             DefaultInitializeCollectionEventListener: TRACE
-        persister:
-          entity: TRACE
     web: DEBUG
 
