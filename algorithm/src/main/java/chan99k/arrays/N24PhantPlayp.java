@@ -4,6 +4,14 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+/**
+ * 식물의 기분이 상하는 시점이 정해져 있다.
+ * x-y 축을 바꿔서 생각해보면 좋다.
+ * 사이클 하나를 지날때마다 로우가 없어지는 형태
+ * 물을 주면 한 사이클이 밀려나는 개념( 언제 없어지는 지 힙 안에서)
+ * 사이클 횟수를 키로, 물을 주면 초기값 3에 3만큼 더해서 사이클 6으로 밀기
+ * 리버스 맵도 하나 더 필요하다. LRU 캐시 구현할 때 많이 쓰는 방식
+ */
 public class N24PhantPlayp {
 
 	public int[] solution(int[] emotions, int[] orders) {
