@@ -39,3 +39,7 @@ out/
 resources/sakila-schema.sql
 resources/sakila-data.sql
 resources/sakila.mwb
+/docs/entitygraph-vs-n-plus-one.puml
+/docs/n-plus-one-problem-experiment.md
+/docs/README.md
+/docs/spring-osiv-sequence.puml
