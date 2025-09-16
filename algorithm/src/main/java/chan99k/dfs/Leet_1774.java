@@ -1,4 +1,4 @@
-package chan99k;
+package chan99k.dfs;
 
 public class Leet_1774 {
 	private int closestCost = Integer.MAX_VALUE;

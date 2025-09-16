@@ -1,3 +1,5 @@
+package chan99k.map;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;

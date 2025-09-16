@@ -1,4 +1,4 @@
-package chan99k;
+package chan99k.bfs;
 
 import java.io.BufferedReader;
 import java.io.IOException;
