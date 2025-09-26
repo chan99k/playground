@@ -21,7 +21,7 @@ import java.util.Arrays;
 public class Boj_3020 {
 	/**
 	 * 첫째 줄에 N과 H가 주어진다. N은 항상 짝수이다. (2 ≤ N ≤ 200,000, 2 ≤ H ≤ 500,000)
-	 *
+	 * <p>
 	 * 다음 N개 줄에는 장애물의 크기가 순서대로 주어진다. 장애물의 크기는 H보다 작은 양수이다.
 	 */
 	public static void main(String[] args) throws IOException {

@@ -22,10 +22,4 @@ public class Leet_64Test {
 		assertThat(target.minPathSum(new int[][] {{1, 2, 3}, {4, 5, 6}})).isEqualTo(12);
 	}
 
-	// @Test
-	// @DisplayName("test03")
-	// public void test03() {
-	// 	assertThat(0).isEqualTo(0);
-	// }
-
 }

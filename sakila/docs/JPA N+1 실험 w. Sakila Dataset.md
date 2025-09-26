@@ -229,7 +229,6 @@ public interface FilmActorRepository extends JpaRepository<FilmActor, FilmActorI
 ```
 
 ### 성능 측정 결과
-**@EntityGraph 적용**
 
 **시도 1 (콜드 스타트):**
 ```log
@@ -293,9 +292,32 @@ EntityGraph 처리 시간: 204ms, 결과 개수: 5462
 
 ### Hibernate Session Metrics 분석
 
+| 시도 | 총 처리시간 | JDBC 준비시간 | JDBC 실행시간 | 쿼리 수 |
+|:-:|:-:|:-:|:-:|:-:|
+| 1회차 | 186ms | 0.18ms | 69.6ms | 1개 |
+| 2회차 | 204ms | 0.35ms | 74.6ms | 1개 |
+| 3회차 | 171ms | 0.23ms | 73.4ms | 1개 |
+| **평균** | **187ms** | **0.25ms** | **72.5ms** | **1개** |
+
 ### SQL 실행 로그 예시
 
+**아래와 같이, EntityGraph는 단일 쿼리로 모든 연관 엔티티를 한번에 로딩합니다.**
+
+```sql
+-- EntityGraph가 생성하는 JOIN 쿼리
+SELECT fa, f, a 
+FROM FilmActor fa 
+LEFT JOIN FETCH fa.film f 
+LEFT JOIN FETCH fa.actor a 
+ORDER BY fa.film.id
+```
+
 #### 쿼리 구성 분석
+
+**EntityGraph의 핵심 특징:**
+- **단일 쿼리**: 1개의 JOIN 쿼리로 모든 데이터 로딩
+- **N+1 문제 완전 해결**: 추가 쿼리 없음
+- **선언적 접근**: 어노테이션만으로 최적화 적용
 
 
 ---
@@ -304,8 +326,18 @@ EntityGraph 처리 시간: 204ms, 결과 개수: 5462
 
 ### 구현 방법
 
+JPQL에서 `JOIN FETCH`를 명시적으로 사용하여 연관 엔티티를 즉시 로딩합니다.
+
+```java
+@Repository
+public interface FilmActorRepository extends JpaRepository<FilmActor, FilmActorId> {
+    
+    @Query("SELECT fa FROM FilmActor fa JOIN FETCH fa.film JOIN FETCH fa.actor ORDER BY fa.film.id")
+    List<FilmActor> findAllWithFetchJoin();
+}
+```
+
 ### 성능 측정 결과
-**Fetch Join 적용**
 
 **시도 1 (콜드 스타트):**
 ```log
@@ -369,10 +401,68 @@ FetchJoin 처리 시간: 233ms, 결과 개수: 5462
 
 ### Hibernate Session Metrics 분석
 
+| 시도 | 총 처리시간 | JDBC 준비시간 | JDBC 실행시간 | 쿼리 수 |
+|:-:|:-:|:-:|:-:|:-:|
+| 1회차 | 268ms | 3.29ms | 63.1ms | 1개 |
+| 2회차 | 207ms | 0.70ms | 78.8ms | 1개 |
+| 3회차 | 233ms | 0.35ms | 69.5ms | 1개 |
+| **평균** | **236ms** | **1.45ms** | **70.5ms** | **1개** |
+
 ### SQL 실행 로그 예시
+
+**아래 SQL을 확인하면 명확히 알수 있듯이, Fetch Join도 단일 쿼리로 모든 연관 엔티티를 한번에 로딩합니다.**
+
+```sql
+-- Fetch Join이 생성하는 명시적 JOIN 쿼리
+SELECT fa.actor_id, fa.film_id, fa.last_update,
+       f.film_id, f.title, f.description, ...,
+       a.actor_id, a.first_name, a.last_name, ...
+FROM film_actor fa 
+INNER JOIN film f ON fa.film_id = f.film_id 
+INNER JOIN actor a ON fa.actor_id = a.actor_id 
+ORDER BY f.film_id
+```
 
 #### 쿼리 구성 분석
 
+**Fetch Join의 핵심 특징:**
+- **단일 쿼리**: 1개의 명시적 JOIN 쿼리로 모든 데이터 로딩
+- **N+1 문제 완전 해결**: 추가 쿼리 없음
+- **명시적 제어**: JPQL에서 직접 JOIN 명시
+
+
+---
+
+## 4. 성능 비교 및 결론
+
+### 전체 성능 비교표
+
+|       방식        | 평균 처리시간 | 평균 JDBC 실행시간 | 쿼리 수 | 성능 개선률 |
+|:---------------:|:-:|:-:|:-:|:-:|
+| **N + 1 발생 시**  | 731ms | 535ms | 1,198개 | - |
+| **EntityGraph** | 187ms | 72.5ms | 1개 | **74% 개선** |
+| **Fetch Join**  | 236ms | 70.5ms | 1개 | **68% 개선** |
+
+### 주요 발견사항
+
+#### 1. 쿼리 실행 횟수
+- **N+1 문제**: 1,198개 쿼리 (1 + 약1,000개 Film + 약200개 Actor)
+- **EntityGraph/Fetch Join**: 1개 쿼리 (완전 해결)
+
+#### 2. 순수 DB 실행 시간
+- **EntityGraph**: 72.5ms
+- **Fetch Join**: 70.5ms
+- **차이**: 거의 없음 (약 2ms)
+
+#### 3. JPA 처리 시간
+- **EntityGraph**: 187ms - 72.5ms = **114.5ms**
+- **Fetch Join**: 236ms - 70.5ms = **165.5ms**
+- **차이**: Fetch Join이 51ms 더 많은 처리 시간
+
+JPA 처리 시간에서 EntityGraph/Fetch Join 간에 실행 시간 차이가 나는 것을 발견하였습니다. 왜 이런 차이가 발생하는 것일까요?
+
+
+### 
 
 ---
 

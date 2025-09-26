@@ -47,3 +47,13 @@ bin/
 
 # Gemini
 experiments/.gemini/
+/algorithm/src/main/java/chan99k/cycledetection/01-DFS-Cycle-Detection.md
+/algorithm/src/main/java/chan99k/cycledetection/02-위상정렬.md
+/algorithm/src/main/java/chan99k/cycledetection/03-Union-Find.md
+/algorithm/src/main/java/chan99k/cycledetection/04-토끼와 거북이.md
+/algorithm/src/main/java/chan99k/cycledetection/05-Tarjan-SCC.md
+/algorithm/src/main/java/chan99k/cycledetection/06-Elementary-Cycles.md
+/algorithm/src/main/java/chan99k/cycledetection/07-Matrix-Based-Approach.md
+/algorithm/src/main/java/chan99k/cycledetection/08-Three-Color-DFS.md
+/Spring-Framework-Implementation-Guide.md
+/Spring-Web-MVC-Implementation-Guide.md

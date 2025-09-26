@@ -1,5 +1,5 @@
 package chan99k.dp;
-
+// 결정이 되어 있다 (definitive)
 public class Leet_64 {
 	public int minPathSum(int[][] grid) {
 		int n = grid.length;
