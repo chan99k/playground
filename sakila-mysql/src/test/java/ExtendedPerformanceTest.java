@@ -17,7 +17,7 @@ import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@SpringBootTest
+@SpringBootTest(classes = chan99k.SakilaApplication.class)
 @ActiveProfiles("test")
 public class ExtendedPerformanceTest {
 	private static final int WARMUP_ITERATIONS = 50;
