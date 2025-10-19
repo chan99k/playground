@@ -3,6 +3,7 @@ package chan99k.filter;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import jakarta.servlet.Filter;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "filter", name = "static-key.enable", havingValue = "true")
 public class StaticKeyAuthenticationFilter implements Filter {
 
 	@Value("${authorization.key}")

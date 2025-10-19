@@ -2,6 +2,7 @@ package chan99k.filter;
 
 import java.io.IOException;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -13,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
+@ConditionalOnProperty(prefix = "filter",name = "filter.test.enabled", havingValue = "true")
 public class TestFilter extends OncePerRequestFilter {
 
 	@Override

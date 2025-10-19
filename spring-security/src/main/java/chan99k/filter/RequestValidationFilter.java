@@ -2,6 +2,7 @@ package chan99k.filter;
 
 import java.io.IOException;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import jakarta.servlet.Filter;
@@ -14,6 +15,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Component
+@ConditionalOnProperty(prefix = "filter", name = "request-validation.enabled", havingValue = "true")
 public class RequestValidationFilter implements Filter {
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {

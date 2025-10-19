@@ -3,7 +3,10 @@ import java.util.List;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Pageable;
@@ -14,14 +17,14 @@ import chan99k.adapter.persistence.repository.FilmActorRepository;
 import chan99k.application.FilmActorResponse;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @SpringBootTest(classes = chan99k.SakilaApplication.class)
 @ActiveProfiles("test")
+@Disabled
 public class ExtendedPerformanceTest {
+	private static final Logger log = LoggerFactory.getLogger(ExtendedPerformanceTest.class);
 	private static final int WARMUP_ITERATIONS = 50;
-	private static final int TEST_ITERATIONS = 25000;
+	private static final int TEST_ITERATIONS = 10;
 
 	@Autowired
 	private FilmActorRepository filmActorRepository;

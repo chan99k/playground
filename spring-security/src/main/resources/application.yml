@@ -1,9 +1,44 @@
 authorization:
   key: cex
 
+filter:
+  logging:
+    enabled: false
+  static-key:
+    enabled: false
+  test:
+    enabled: false
+  request-validation:
+    enabled: false
+  csrf-logging:
+    enabled: true
+
 server:
   port: 48080
 
 logging:
   level:
-    root: info
+    web: debug
+
+spring:
+  datasource:
+    hikari:
+      jdbc-url: jdbc:mysql://localhost:43306/spring_securities
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      username: root
+      password: admin
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    database: mysql
+    show-sql: true
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:sql/schema.sql
+
