@@ -1,5 +1,7 @@
 package chan99k.config;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +15,8 @@ import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 import chan99k.auth.CsrfTokenLogger;
 import chan99k.auth.CustomCsrfTokenRepository;
@@ -53,35 +57,42 @@ public class SecurityConfig {
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+		// 커스텀 필터 설정
 		httpSecurity
-			// .addFilterBefore(new RequestValidationFilter(), BasicAuthenticationFilter.class)
 			// .addFilterAfter(new LoggingFilter(), BasicAuthenticationFilter.class)
-			// .addFilterAt(staticKeyAuthenticationFilter, BasicAuthenticationFilter.class)
-			// .addFilterAt(testFilter, BasicAuthenticationFilter.class)
 			.authorizeHttpRequests(c -> c.anyRequest().permitAll())
-			.addFilterAfter(csrfTokenLogger, CsrfFilter.class)
-			.httpBasic(Customizer.withDefaults())
+			.addFilterAfter(csrfTokenLogger, CsrfFilter.class);
+
+		// CSRF 설정
+		httpSecurity
 			.csrf(csrf -> {
 				csrf.csrfTokenRepository(customCsrfTokenRepository);
 				csrf.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler());
 			});
 
+		httpSecurity
+			.httpBasic(Customizer.withDefaults());
+
+		httpSecurity.formLogin(c -> c.defaultSuccessUrl("/main", true));
+
+
+		// CORS 설정
+		httpSecurity.cors(cors -> {
+			CorsConfigurationSource source = request -> {
+				CorsConfiguration config = new CorsConfiguration();
+				// config.setAllowedOrigins(
+				// 	List.of("http://localhost:48080")
+				// );
+				// config.setAllowedMethods(
+				// 	List.of("GET", "POST", "PUT", "DELETE")
+				// );
+				config.setAllowedOrigins(List.of("*"));
+				config.setAllowedMethods(List.of("*"));
+				return config;
+			};
+			cors.configurationSource(source);
+		});
 
 		return httpSecurity.build();
 	}
-
-	// private final CsrfTokenLogger csrfTokenLogger;
-	//
-	//
-	// @Bean
-	// public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-	// 	httpSecurity.httpBasic(Customizer.withDefaults());
-	// 	httpSecurity.csrf(c -> {
-	// 		c.csrfTokenRepository(customCsrfTokenRepository);
-	// 		c.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler());
-	// 	});
-	// 	httpSecurity.addFilterAfter(csrfTokenLogger, CsrfFilter.class);
-	// 	httpSecurity.authorizeHttpRequests(c -> c.anyRequest().permitAll());
-	// 	return httpSecurity.build();
-	// }
 }

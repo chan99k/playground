@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring Security Main Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .user-info {
+            background-color: #e8f5e8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .csrf-info {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .logout-form {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Spring Security 메인 페이지</h1>
+            <p>로그인이 성공적으로 완료되었습니다!</p>
+        </div>
+
+        <div class="user-info">
+            <h3>사용자 정보</h3>
+            <p><strong>사용자명:</strong> <span sec:authentication="name">익명</span></p>
+            <p><strong>권한:</strong> <span sec:authentication="authorities">NONE</span></p>
+            <p><strong>인증 상태:</strong> 
+                <span sec:authorize="isAuthenticated()">✅ 인증됨</span>
+                <span sec:authorize="!isAuthenticated()">❌ 미인증</span>
+            </p>
+        </div>
+
+        <div class="csrf-info">
+            <h3>CSRF 토큰 정보</h3>
+            <p><strong>토큰:</strong> <input type="text" th:value="${_csrf.token}" readonly style="width: 100%; border: none; background: transparent;"/></p>
+            <p><strong>헤더명:</strong> <span th:text="${_csrf.headerName}">X-CSRF-TOKEN</span></p>
+        </div>
+
+        <div class="actions">
+            <h3>사용 가능한 기능</h3>
+            <ul>
+                <li>✅ CSRF 보호가 활성화됨</li>
+                <li>✅ CORS 설정이 구성됨</li>
+                <li>✅ 커스텀 필터가 적용됨</li>
+                <li>✅ 폼 로그인 인증 완료</li>
+            </ul>
+        </div>
+
+        <div class="test-form" style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <h3>/add 엔드포인트 테스트</h3>
+            <form th:action="@{/add}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <label for="name">이름:</label>
+                <input type="text" id="name" name="name" value="테스트" style="margin: 0 10px; padding: 5px;"/>
+                <button type="submit" class="btn">POST 요청 보내기</button>
+            </form>
+        </div>
+
+        <div class="logout-form">
+            <form th:action="@{/logout}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn btn-danger">로그아웃</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

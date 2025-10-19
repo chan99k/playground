@@ -1,6 +1,5 @@
 package chan99k.auth;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.security.web.csrf.CsrfToken;
@@ -21,33 +20,40 @@ public class CustomCsrfTokenRepository implements CsrfTokenRepository {
 	@Override
 	public CsrfToken generateToken(HttpServletRequest request) {
 		String uuid = UUID.randomUUID().toString();
-		return new DefaultCsrfToken("X-CSRF_TOKEN", "_csrf", uuid);
+		return new DefaultCsrfToken("X-CSRF-TOKEN", "_csrf", uuid);
 	}
 
 	@Override
 	public void saveToken(CsrfToken csrfToken, HttpServletRequest request, HttpServletResponse response) {
-		String identifier = request.getHeader("X-IDENTIFIER");
-		Optional<Token> foundToken = tokenJpaRepository.findTokenByIdentifier(identifier);
-
-		if (foundToken.isPresent()) {
-			Token token = foundToken.get();
-			token.updateToken(csrfToken.getToken());
-		} else {
-			Token token = new Token(identifier, csrfToken.getToken());
-			tokenJpaRepository.save(token);
+		if (csrfToken == null) {
+			request.getSession().removeAttribute("CSRF_TOKEN");
+			return;
 		}
+		String identifier = request.getHeader("X-IDENTIFIER");
+		if (identifier != null) {
+			tokenJpaRepository.findTokenByIdentifier(identifier)
+				.ifPresentOrElse(
+					existingToken -> existingToken.updateToken(csrfToken.getToken()),
+					() -> tokenJpaRepository.save(new Token(identifier, csrfToken.getToken()))
+				);
+		}
+
+		request.getSession().setAttribute("CSRF_TOKEN", csrfToken.getToken());
 	}
 
 	@Override
 	public CsrfToken loadToken(HttpServletRequest request) {
 		String identifier = request.getHeader("X-IDENTIFIER");
-		Optional<Token> foundToken = tokenJpaRepository.findTokenByIdentifier(identifier);
-
-		if (foundToken.isPresent()) {
-			Token token = foundToken.get();
-			return new DefaultCsrfToken("X-CSRF-TOKEN", "_csrf", token.getToken());
+		if (identifier != null) {
+			return tokenJpaRepository.findTokenByIdentifier(identifier)
+				.map(token -> new DefaultCsrfToken("X-CSRF-TOKEN", "_csrf", token.getToken()))
+				.orElse(null);
 		}
 
+		String token = (String)request.getSession().getAttribute("CSRF_TOKEN");
+		if (token != null) {
+			return new DefaultCsrfToken("X-CSRF-TOKEN", "_csrf", token);
+		}
 		return null;
 	}
 }

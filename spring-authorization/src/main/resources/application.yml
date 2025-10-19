@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: auth-service
+  datasource:
+    hikari:
+      jdbc-url: jdbc:mysql://localhost:43306/spring_securites
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      username: root
+      password: 1q2w3e4r
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    database: mysql
+    show-sql: true
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:sql/schema.sql
+server:
+  port: 48081
