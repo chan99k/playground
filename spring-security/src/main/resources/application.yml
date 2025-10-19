@@ -1,0 +1,9 @@
+authorization:
+  key: cex
+
+server:
+  port: 48080
+
+logging:
+  level:
+    root: info
