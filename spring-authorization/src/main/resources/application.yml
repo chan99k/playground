@@ -3,10 +3,10 @@ spring:
     name: auth-service
   datasource:
     hikari:
-      jdbc-url: jdbc:mysql://localhost:43306/spring_securites
+      jdbc-url: jdbc:mysql://localhost:43306/spring_securities
       driver-class-name: com.mysql.cj.jdbc.Driver
       username: root
-      password: 1q2w3e4r
+      password: admin
   jpa:
     properties:
       hibernate:
