@@ -1,6 +1,5 @@
 package chan99k.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,7 +16,7 @@ public class AuthController {
 	private final OtpService otpService;
 	private final UserService userService;
 
-	@GetMapping("/api/v1/users/auth")
+	@PostMapping("/api/v1/users/auth")
 	public String auth(@RequestBody EncryptedUserRequestBody request) {
 		return userService.auth(request.getUserId(), request.getPassword());
 	}

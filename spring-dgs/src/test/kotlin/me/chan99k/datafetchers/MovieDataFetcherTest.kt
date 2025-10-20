@@ -2,20 +2,18 @@ package me.chan99k.datafetchers
 
 import com.chan99k.springdgs.client.MovieGraphQLQuery
 import com.chan99k.springdgs.client.MovieProjectionRoot
-import me.chan99k.config.DataLoaderExecutor
-import me.chan99k.dataloaders.DirectorByIdDataLoader
-
-import me.chan99k.exceptions.CustomDataFetcherExceptionHandler
-import me.chan99k.repositories.DirectorRepository
-import me.chan99k.repositories.MovieRepository
-import me.chan99k.scalars.EmailScalar
-
 import com.netflix.graphql.dgs.DgsQueryExecutor
 import com.netflix.graphql.dgs.autoconfig.DgsExtendedScalarsAutoConfiguration
 import com.netflix.graphql.dgs.client.codegen.GraphQLQueryRequest
 import com.netflix.graphql.dgs.test.EnableDgsTest
+import me.chan99k.config.DataLoaderExecutor
+import me.chan99k.dataloaders.DirectorByIdDataLoader
 import me.chan99k.entities.Director
 import me.chan99k.entities.Movie
+import me.chan99k.exceptions.CustomDataFetcherExceptionHandler
+import me.chan99k.repositories.DirectorRepository
+import me.chan99k.repositories.MovieRepository
+import me.chan99k.scalars.EmailScalar
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -35,6 +33,7 @@ import java.util.*
         DirectorByIdDataLoader::class,
         DataLoaderExecutor::class,
         EmailScalar::class,
+        me.chan99k.scalars.UploadScalar::class,
     ]
 )
 class MovieDataFetcherTest() {

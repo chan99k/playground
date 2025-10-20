@@ -37,7 +37,7 @@ class MovieLoggingInstrument : SimplePerformantInstrumentation() {
         state: InstrumentationState?
     ): CompletableFuture<ExecutionResult> {
         require(state is LoggingState)
-        state.responseDate = executionResult.getData<Any>().toString()
+        state.responseDate = executionResult.getData<Any>()?.toString() ?: "null"
         state.errorMessage = executionResult.errors.joinToString { it.toString() }
         state.log(logger)
         return super.instrumentExecutionResult(executionResult, parameters, state)

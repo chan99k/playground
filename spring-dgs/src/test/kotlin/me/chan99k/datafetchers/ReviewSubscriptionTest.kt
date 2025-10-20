@@ -1,7 +1,6 @@
 package me.chan99k.datafetchers
 
 
-import me.chan99k.repositories.ReviewRepository
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.netflix.graphql.dgs.DgsQueryExecutor
 import com.netflix.graphql.dgs.autoconfig.DgsExtendedScalarsAutoConfiguration
@@ -10,7 +9,7 @@ import graphql.ExecutionResult
 import me.chan99k.entities.Movie
 import me.chan99k.entities.Review
 import me.chan99k.entities.User
-
+import me.chan99k.repositories.ReviewRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -28,6 +27,8 @@ import java.util.concurrent.TimeUnit
     classes = [
         DgsExtendedScalarsAutoConfiguration::class,
         ReviewDataFetcher::class,
+        me.chan99k.scalars.EmailScalar::class,
+        me.chan99k.scalars.UploadScalar::class,
     ]
 )
 @EnableDgsTest

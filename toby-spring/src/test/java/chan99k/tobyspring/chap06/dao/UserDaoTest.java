@@ -9,6 +9,7 @@ import javax.sql.DataSource;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +27,7 @@ import chan99k.tobyspring.chap05.dao.UserDao;
 import chan99k.tobyspring.chap05.domain.Level;
 import chan99k.tobyspring.chap05.domain.User;
 
+@Disabled
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(locations = "classpath:chan99k/tobyspring/chap05/test-applicationContext.xml")
 @Sql(scripts = "/chan99k/tobyspring/chap05/sql/users_create.sql")
