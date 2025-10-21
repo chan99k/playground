@@ -16,7 +16,7 @@ import chan99k.entitiy.EntityModule;
 import chan99k.repository.RepositoryModule;
 
 @Configuration
-@EntityScan(basePackageClasses = {EntityModule.class}) // package-info 로도 가능하지 않나...?
+@EntityScan(basePackageClasses = {EntityModule.class}) // basePackages 는 문자열이므로 오타가 있어도 컴파일 시점에 발견되지 않으므로, basePackageClasses 사용이 권장된다
 @EnableJpaRepositories(basePackageClasses = {RepositoryModule.class})
 public class JpaConfig {
 	@Bean
