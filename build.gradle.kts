@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.spring.boot) apply false
 }
 
-val containerModules = setOf(":algorithm", ":java", ":java:effective-java", ":kotlin", ":spring")
+val containerModules = setOf(":algorithm", ":java", ":kotlin", ":spring")
 
 allprojects {
     group = "dev.chan99k"
