@@ -51,6 +51,16 @@
 
 숫자 prefix는 정렬용이며, Gradle 프로젝트명은 영문자로 매핑된다.
 
+각 컨테이너 디렉토리에는 `modules.gradle.kts` 파일이 있으며, 루트 `settings.gradle.kts`에서 `apply(from = ...)`로 불러온다. 하위 모듈 등록은 컨테이너의 `modules.gradle.kts`에서 관리하므로, 루트 설정 파일을 수정할 필요가 없다.
+
+```
+settings.gradle.kts
+  apply(from = "00-algorithm/modules.gradle.kts")   ← 각 컨테이너의 모듈 정의가 합쳐짐
+  apply(from = "01-java/modules.gradle.kts")
+  apply(from = "02-kotlin/modules.gradle.kts")
+  apply(from = "03-spring/modules.gradle.kts")
+```
+
 ### Adding a Module
 
 #### 1. 하위 모듈 디렉토리 생성
@@ -117,20 +127,24 @@ dependencies {
 </tr>
 </table>
 
-#### 3. settings.gradle.kts에 등록
+#### 3. 컨테이너의 modules.gradle.kts에 등록
 
 ```groovy
-include(
-    "spring",
-    "spring:security",   // 추가
-)
+// 03-spring/modules.gradle.kts
+include("spring")
+project(":spring").projectDir = file("${rootDir}/03-spring")
 
-project(":spring:security").projectDir = file("03-spring/security")  // 매핑 추가
+include("spring:security")                                                 // 추가
+project(":spring:security").projectDir = file("${rootDir}/03-spring/security")  // 추가
 ```
 
-#### 4. 컨테이너 모듈 추가 시
+루트 `settings.gradle.kts`는 수정하지 않는다.
 
-`build.gradle.kts`의 `containerModules`에 path를 추가한다.
+#### 4. 새 컨테이너 모듈 추가 시
+
+1. 디렉토리 생성 및 `modules.gradle.kts` 작성
+2. 루트 `settings.gradle.kts`에 `apply(from = "...")` 추가
+3. 루트 `build.gradle.kts`의 `containerModules`에 path 추가
 
 ```groovy
 val containerModules = setOf(":algorithm", ":java", ":kotlin", ":spring", ":new-container")
@@ -142,7 +156,7 @@ val containerModules = setOf(":algorithm", ":java", ":kotlin", ":spring", ":new-
 ./gradlew build                          # 전체 빌드
 ./gradlew :spring:modulith:build         # 특정 모듈 빌드
 ./gradlew :spring:modulith:bootRun       # Spring Boot 실행
-./gradlew :algorithm:java:test           # 특정 모듈 테스트
+./gradlew :algorithm:solve-java:test     # 특정 모듈 테스트
 ./gradlew projects                       # 모듈 구조 확인
 ```
 
@@ -155,8 +169,8 @@ val containerModules = setOf(":algorithm", ":java", ":kotlin", ":spring", ":new-
 
 | 모듈 | 설명 |
 |------|------|
-| `algorithm:java` | Java 풀이 |
-| `algorithm:kotlin` | Kotlin 풀이 |
+| `algorithm:solve-java` | Java 풀이 |
+| `algorithm:solve-kotlin` | Kotlin 풀이 |
 
 
 
