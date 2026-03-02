@@ -6,7 +6,7 @@
 
 ---
 
-## 00 Project Usage
+## Project Usage
 
 <table>
 <tr>
@@ -148,7 +148,7 @@ val containerModules = setOf(":algorithm", ":java", ":kotlin", ":spring", ":new-
 
 ---
 
-## 01 Algorithm
+## 00 Algorithm
 
 > 알고리즘 문제 풀이. Java와 Kotlin 두 언어로 풀이할 수 있다.
 > > Wiki: [Algorithm](../../wiki/Algorithm)
@@ -158,9 +158,9 @@ val containerModules = setOf(":algorithm", ":java", ":kotlin", ":spring", ":new-
 | `algorithm:java` | Java 풀이 |
 | `algorithm:kotlin` | Kotlin 풀이 |
 
----
 
-## 02 Java
+
+## 01 Java
 
 > Java 언어 심화 학습.
 > > Wiki: [Java](../../wiki/Java)
@@ -169,9 +169,9 @@ val containerModules = setOf(":algorithm", ":java", ":kotlin", ":spring", ":new-
 |------|------|----------|
 | `java:effective-java` | Effective Java 3/E 아이템별 실습 | Joshua Bloch 저 |
 
----
 
-## 03 Kotlin
+
+## 02 Kotlin
 
 > Kotlin 언어 학습.
 > > Wiki: [Kotlin](../../wiki/Kotlin)
@@ -180,9 +180,9 @@ val containerModules = setOf(":algorithm", ":java", ":kotlin", ":spring", ":new-
 |------|------|----------|
 
 
----
 
-## 04 Spring
+
+## 03 Spring
 
 > Spring Framework 학습.
 > > Wiki: [Spring](../../wiki/Spring)
