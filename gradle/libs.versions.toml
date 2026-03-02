@@ -1,0 +1,19 @@
+[versions]
+kotlin = "2.2.0"
+springBoot = "4.0.3"
+springModulith = "2.0.3"
+
+[libraries]
+# Spring Boot Starters (버전은 BOM에서 관리)
+spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter" }
+spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+
+# Spring Modulith
+spring-modulith-bom = { module = "org.springframework.modulith:spring-modulith-bom", version.ref = "springModulith" }
+spring-modulith-core = { module = "org.springframework.modulith:spring-modulith-starter-core" }
+spring-modulith-test = { module = "org.springframework.modulith:spring-modulith-starter-test" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
