@@ -6,7 +6,20 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 rootProject.name = "playground"
 
-apply(from = "00-algorithm/modules.gradle.kts")
-apply(from = "01-java/modules.gradle.kts")
-apply(from = "02-kotlin/modules.gradle.kts")
-apply(from = "03-spring/modules.gradle.kts")
+// 00-algorithm
+include("algorithm", "algorithm:solve-java", "algorithm:solve-kotlin")
+project(":algorithm").projectDir = file("00-algorithm")
+project(":algorithm:solve-java").projectDir = file("00-algorithm/solve-java")
+project(":algorithm:solve-kotlin").projectDir = file("00-algorithm/solve-kotlin")
+
+// 01-java
+include("java")
+project(":java").projectDir = file("01-java")
+
+// 02-kotlin
+include("kotlin")
+project(":kotlin").projectDir = file("02-kotlin")
+
+// 03-spring
+include("spring")
+project(":spring").projectDir = file("03-spring")
